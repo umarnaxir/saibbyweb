@@ -1,0 +1,506 @@
+$fontPrimary: "Galano-Bold";
+$fontSecondary1: "Circular-Book";
+$fontSecondary2: "JetBrainsMono-Regular";
+
+$colorPrimary: #000;
+$colorSecondary: #8d8d8d;
+a {
+  text-decoration: none;
+}
+
+.primary {
+  color: $colorPrimary;
+}
+.secondary {
+  color: $colorSecondary;
+}
+.white {
+  color: white;
+}
+.bg-primary {
+  background-color: $colorPrimary;
+}
+.bg-secondary {
+  background-color: $colorSecondary;
+}
+.bg-white {
+  background-color: white;
+}
+
+/* primary font */
+@font-face {
+  font-family: $fontPrimary;
+  src: url("/fonts/Galano-Bold.otf");
+}
+
+/* secondary font - 1 */
+@font-face {
+  font-family: $fontSecondary1;
+  src: url("/fonts/CircularStd-Book.otf");
+}
+
+/* secondary font - 2 */
+@font-face {
+  font-family: $fontSecondary2;
+  src: url("/fonts/JetBrainsMono-Regular.ttf");
+}
+
+* {
+  box-sizing: border-box;
+}
+
+
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+p,
+div {
+  margin: 0;
+  padding: 0;
+  font-family: $fontSecondary1;
+  overflow-x: hidden;
+}
+
+h1 {
+  color: $colorPrimary;
+  margin: 0;
+}
+
+body {
+  overflow-x: hidden !important;
+}
+
+/* common section (homepage) */
+.section {
+  min-height: 100vh;
+  box-sizing: border-box;
+  position: relative;
+
+  &.dark {
+    background-color: $colorPrimary;
+  }
+
+  .header {
+    padding: 10px 20px;
+    margin-bottom: 10px;
+    gap: 15px;
+
+    .square {
+      height: 17px;
+      width: 17px;
+      transform: rotate(-10deg);
+    }
+
+    .title {
+      font-size: 1.5em;
+      font-family: $fontSecondary2;
+    }
+  }
+
+  .tagline {
+    color:rgb(110, 110, 110);
+    // color: white;
+    font-family: $fontSecondary1;
+  }
+
+  @media (max-width: 768px) {
+  }
+}
+
+.logo {
+  position: fixed;
+  top: 4%;
+  left: 4%;
+  height: 5vw;
+  width: 5vw;
+  z-index: 2;
+  background-size: cover;
+}
+
+/* hero component */
+.hero {
+  // background-image: url('/images/services/hero.png');
+
+
+
+
+  .content {
+    padding-left:15%;
+        .headline {
+      // color:white;
+      text-align: left;
+      font-family: $fontPrimary;
+      margin: 1% 0;
+      width:70%;
+      line-height: 1.2em;
+      font-size: 4vw;
+    }
+
+    .tagline {
+      font-family: $fontSecondary1;
+      margin-bottom: 1%;
+      font-size: 1.2em;
+      color: white;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .logo {
+      height: 15vw;
+      width: 15vw;
+      left: 5%;
+    }
+    .content {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      width: 85%;
+      .headline {
+        margin-bottom: 0;
+        font-size: 2.5em;
+      }
+      .tagline {
+        font-size: 1em;
+        margin-bottom: 20px;
+      }
+    }
+  }
+}
+
+@keyframes revealActive {
+  0% {
+    // background-size: 120%;
+    border-radius: 20px;
+
+  }
+  100% {
+    border-radius: 200px;
+  }
+}
+
+.reveal-active {
+
+
+  // span,p, h4 {
+  //   animation-fill-mode: both;
+  //   animation-name: revealActive;
+  //   animation-duration: 1s;
+  //   animation-timing-function: ease-in-out;
+  // }
+
+  .image-section {
+    animation-fill-mode: both;
+    animation-name: revealActive;
+    animation-duration: 1s;
+    animation-timing-function: ease-in-out;
+  }
+}
+
+.services {
+  // border-top: 2px solid $colorPrimary;
+  // background-color: rgba(216,216,216,0.2);
+  .headline {
+    font-family: $fontPrimary;
+    font-weight: 100;
+    margin: 1% 0;
+    font-size: 2em;
+    text-align: left;
+    width: 70%;
+    margin-top: 15px;
+  }
+  @media (max-width: 768px) {
+    .headline {
+      width: 85%;
+      font-size: 1.2em;
+    }
+  }
+}
+
+.flex {
+  display: flex;
+  &.col {
+    flex-direction: column;
+  }
+  &.around {
+    justify-content: space-around;
+  }
+  &.between {
+    justify-content: space-between;
+  }
+  &.evenly {
+    justify-content: space-evenly;
+  }
+  &.center {
+    justify-content: center;
+    align-items: center;
+  }
+  &.j-center {
+    justify-content: center;
+  }
+  &.a-center {
+    align-items: center;
+  }
+}
+
+/* action button */
+.action {
+  border: none;
+  background-color: $colorPrimary;
+  color: white;
+  padding: 1% 2.5%;
+  margin: 1% 0;
+  font-family: $fontSecondary1;
+  font-size: 0.9em;
+  cursor: pointer;
+  
+  &.outline {
+    background-color: white;
+    border: 1px solid $colorPrimary;
+    color: $colorPrimary;
+  }
+
+  // &.white {
+  //   backgourn
+  // }
+
+  @media (max-width: 768px) {
+    font-size: 1.1em;
+    padding: 2% 4%;
+  }
+
+
+}
+
+/* offcanvas menu */
+.hamburger {
+  position: fixed;
+  right: 4%;
+  width: 5vw;
+  top: 4%;
+  height: 5vw;
+  border: 2px solid rgb(243, 243, 243);
+  z-index: 1;
+
+  @media (max-width: 768px) {
+    height: 13vw;
+    width: 13vw;
+    right: 6%;
+  }
+
+  span {
+    position: absolute;
+    width: 1px;
+    left: 15%;
+    text-align: center;
+    font-size: 9px;
+    word-wrap: break-word;
+    font-family: $fontSecondary1;
+    color: white;
+  }
+
+  div {
+    width: 60%;
+    margin: 6% 0;
+    height: 0px;
+    border-bottom: 2px solid white;
+    transform: translateX(50%);
+    &.first {
+      // align-self: flex-end;
+      width: 70%;
+    }
+
+    &.second {
+      //   transform: rotate(-90deg);
+      width: 60%;
+      // align-self: flex-end;
+    }
+
+    &.third {
+      //   transform:translateX(500%);
+      // align-self: flex-end;
+
+      width: 40%;
+    }
+  }
+}
+
+.service-list {
+  width: 100vw;
+  overflow: hidden;
+  margin-top: 20px;
+  height: 80vh;
+
+  .list-item {
+    margin-left: 400px;
+    margin-right: 400px;
+    width: fit-content;
+  }
+
+  @media (max-width: 768px) {
+    .list-item {
+      margin-left: 0;
+      flex-direction: column;
+    }
+  }
+}
+
+/* service item */
+.service-item {
+  height: 80vh;
+  width: 57vw;
+  max-height:430px;
+  max-width: 800px;
+  margin: 0 15px;
+  border-radius: 10px;
+  overflow: hidden;
+  background-color: white;
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+
+  .text-section {
+    width: 45%;
+    height: 100%;
+    background-color: rgb(255, 255, 255);
+    // border: 1px solid;
+    .part-1 {
+      gap: 30px;
+      padding-top: 10%;
+      // background-color: blue;
+      .line {
+        margin-top: -15%;
+        width: 14%;
+        border: none;
+        border-top: 2px solid #333;
+      }
+      .major {
+        width: 50%;
+        .name {
+          font-size: 25px;
+          font-family: $fontSecondary1;
+        }
+
+        .description {
+          font-size: 14px;
+        }
+      }
+    }
+
+    .part-2 {
+      // background-color: gold;
+      .sub-list-name {
+        font-size: 17px;
+        border-bottom: 1px solid rgb(173, 173, 173);
+        padding: 5px 10px;
+        text-align: right;
+      }
+    }
+  }
+
+  .image-section {
+    width: 55%;
+    height: 100%;
+    background-size: 100;
+    background-position: center;
+
+    // background-color: rgb(101, 101, 215);
+    // @media(max-width: 768px) {
+    //   height: 60%;
+    // }
+  }
+
+  p, span, h4 {
+    // opacity: 0;
+  }
+
+  @media(max-width: 768px) {
+    height: 100vh;
+    width: 100vw;
+    flex-direction: column;
+    
+    .text-section {
+      width: 100%;
+      height: 40%;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      .part-1 {
+        width: 50%;
+        margin-top:0;
+        padding-left: 15px;
+        
+        .line {
+          display: none;
+        }
+        .major {
+          width: 100%;
+          gap: 10px;
+          .name {
+            font-size: 21px;
+          }
+        }
+
+        .outline {
+          padding:2px 10px;
+          font-size: 0.8em;
+          width: fit-content;
+        }
+      }
+      .part-2 {
+        width: 50%;
+        .sub-list-name {
+          font-size: 14px;
+        }
+      }
+    }
+
+    .image-section {
+      width: 100%;
+      height: 60%;
+    }
+  }
+}
+
+/* override for tech stack section so animated grid is not clipped */
+.tech-stack {
+  overflow: visible;
+}
+
+.crafted {
+  position: absolute;
+  right: 5%;
+  bottom: 5%;
+  color: white;
+  font-size: 14px;
+
+  span {
+    color: rgb(169, 71, 79);
+    font-size: 1.1em;
+  }
+}
+
+.email {
+  // transform: rotate(-90deg);
+  color: white;
+  font-size: 14px;
+  font-family: $fontSecondary1;
+
+  span {
+    color: rgb(169, 71, 79);
+    font-size: 23px;
+  }
+}
+
+.linked-in {
+  width:2vw;
+  height:2vw;
+}
+
+.left-corner {
+  position: absolute;
+  bottom: 5%;
+  left: 5%;
+  gap:10px;
+}
