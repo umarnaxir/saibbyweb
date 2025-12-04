@@ -11,57 +11,51 @@ import Footer from "@/components/sections/Footer";
 import OffCanvasMenu from "@/components/sections/OffCanvasMenu";
 import { useEffect, useState } from "react";
 import ContactForm from "@/components/sections/ContactForm";
-import { revealAnimation } from "@/lib/helpers/gsap";
+import { revealAnimation, cleanupRevealAnimation } from "@/lib/helpers/gsap";
 
 export default function Home() {
-  /* offcanvas menu toggle */
   const [menuToggle, setMenuToggle] = useState(false);
-  /* contact form toggle */
   const [contactFormToggle, setContactFormToggle] = useState(false);
-  /* show contact form */
   const showContactForm = () => {
     setContactFormToggle(true);
-  }
+  };
 
   useEffect(() => {
-    // Initialize reveal animations once on mount
-    if (typeof window !== 'undefined') {
-      // Use requestAnimationFrame to ensure DOM is fully rendered
+    if (typeof window !== "undefined") {
       requestAnimationFrame(() => {
         revealAnimation();
       });
     }
-    
-    // Initialize Google Analytics if needed
-    if (typeof window !== 'undefined' && process.env.NODE_ENV === 'production') {
-      // You may want to add ReactGA initialization here if needed
-      // ReactGA.pageview(window.location.pathname + window.location.search);
-    }
-    
+
     setTimeout(() => setContactFormToggle(true), 6000);
+
+    // Cleanup function to reset animations when component unmounts
+    return () => {
+      cleanupRevealAnimation();
+    };
   }, []);
 
   return (
     <>
-      <Container custom={{ width: "95%", marginLeft: "5%" }} customMobile={{ width: "100%", marginLeft: "0" }}>
-        {/* logo */}
+      <Container
+        className="main-container"
+        custom={{ width: "90%", marginLeft: "10%" }}
+        customMobile={{ width: "100%", marginLeft: "0" }}
+      >
         <SWHeader toggleMenu={() => setMenuToggle((t) => !t)} />
-        {/* hero */}
         <Hero />
-        {/* Services */}
         <Services showContactForm={showContactForm} />
-        {/* Work */}
         <Work />
-        {/* tech stack */}
         <TechStack />
-        {/* footer  */}
-        <Footer
-          updateContactFormToggle={showContactForm}
+        <Footer updateContactFormToggle={showContactForm} />
+        <OffCanvasMenu
+          menuToggle={menuToggle}
+          closeMenu={() => setMenuToggle(false)}
         />
-        {/* off canvas menu */}
-        <OffCanvasMenu menuToggle={menuToggle} closeMenu={() => setMenuToggle(false)} />
-        {/* full screen contact form */}
-        <ContactForm contactFormToggle={contactFormToggle} updateContactFormToggle={() => setContactFormToggle((_) => !_)} />
+        <ContactForm
+          contactFormToggle={contactFormToggle}
+          updateContactFormToggle={() => setContactFormToggle((_) => !_)}
+        />
       </Container>
     </>
   );

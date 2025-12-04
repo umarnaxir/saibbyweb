@@ -40,7 +40,6 @@ function Work() {
         setDesktopAnimationForWorkSection(workImages, false, setParentST);
       },
       "(max-width: 768px)": function () {
-        // revealAnimation is already called globally, no need to call again
       },
     });
   }, [workImages, setParentST]);

@@ -154,7 +154,6 @@ export function adjustStyles(device: BreakpointType, toBeAdjusted: Record<string
     css += `${kebabize(key)}: ${originalValue ? parseInt(originalValue) + toBeAdjusted[key] + "rem;" : "auto;"}`;
   });
   css += "}";
-  // console.log(css);
   return css;
 }
 

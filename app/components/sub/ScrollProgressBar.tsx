@@ -4,13 +4,20 @@ import { Flex } from "@/components/styled/flex.styled";
 import gsap from "gsap";
 import { useCallback } from "react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import styled from "styled-components";
 
 type ScrollProgressBarProps = {
   className: string;
-  bg?: string; // background (track) color
-  barColor?: string; // moving progress color
+  bg?: string;
+  barColor?: string;
   scrollTrigger?: ScrollTrigger.Vars;
 };
+
+const ProgressBarInner = styled.div<{ barColor: string }>`
+  height: 100%;
+  width: 0;
+  background-color: ${(props) => props.barColor};
+`;
 
 function ScrollProgressBar({ bg = "black", barColor = "#00ff4c", className, scrollTrigger }: ScrollProgressBarProps) {
   const setAnimation = useCallback(
@@ -42,10 +49,7 @@ function ScrollProgressBar({ bg = "black", barColor = "#00ff4c", className, scro
       customMobile={{ width: "1vw" }}
       className={className}
     >
-      <div
-        className={`${className}__inner`}
-        style={{ height: "100%", width: 0, backgroundColor: barColor }}
-      />
+      <ProgressBarInner className={`${className}__inner`} barColor={barColor} />
     </Flex>
   );
 }

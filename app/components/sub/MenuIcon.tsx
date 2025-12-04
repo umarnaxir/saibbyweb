@@ -1,6 +1,6 @@
 type OffCanvasMenuProps = {
-    className?:string;
-    toggleMenu: Function;
+    className?: string;
+    toggleMenu: () => void;
 }
 
 function MenuIcon({className, toggleMenu}: OffCanvasMenuProps) {

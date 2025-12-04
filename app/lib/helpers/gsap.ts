@@ -54,10 +54,27 @@ function hideElement(elem: HTMLElement) {
   gsap.set(elem, { autoAlpha: 0 });
 }
 
+function cleanupRevealAnimationInternal() {
+  // Kill all ScrollTrigger instances
+  revealTriggers.forEach((trigger) => {
+    trigger.kill();
+  });
+  revealTriggers.length = 0;
+  
+  // Reset the initialization flag
+  revealAnimationInitialized = false;
+  
+  // Reset all reveal elements to visible state
+  gsap.utils.toArray(".reveal").forEach(function (elem: unknown) {
+    const eleme = elem as HTMLElement;
+    gsap.set(eleme, { autoAlpha: 1, x: 0, y: 0, clearProps: "all" });
+  });
+}
+
 function setRevealAnimation() {
-  // Prevent double initialization
+  // Clean up existing triggers if already initialized
   if (revealAnimationInitialized) {
-    return;
+    cleanupRevealAnimationInternal();
   }
 
   gsap.registerPlugin(ScrollTrigger);
@@ -82,25 +99,30 @@ function setRevealAnimation() {
     });
 
     revealTriggers.push(trigger);
-
-    // Check if element is already in viewport on page load and animate immediately
-    // Use requestAnimationFrame to ensure DOM is ready
-    requestAnimationFrame(() => {
-      const rect = eleme.getBoundingClientRect();
-      const isInViewport = rect.top < window.innerHeight * 0.85 && rect.bottom > 0;
-      if (isInViewport && !trigger.isActive) {
-        animateFrom(eleme);
-      }
-    });
   });
 
   revealAnimationInitialized = true;
   
-  // Refresh ScrollTrigger after a brief delay to ensure all elements are measured
+  // Refresh ScrollTrigger and check for elements in viewport after DOM is ready
   requestAnimationFrame(() => {
     ScrollTrigger.refresh();
+    
+    // Check if elements are already in viewport and animate them immediately
+    requestAnimationFrame(() => {
+      gsap.utils.toArray(".reveal").forEach(function (elem: unknown) {
+        const eleme = elem as HTMLElement;
+        const rect = eleme.getBoundingClientRect();
+        const viewportThreshold = window.innerHeight * 0.85;
+        const isInViewport = rect.top < viewportThreshold && rect.bottom > 0;
+        // Animate immediately if element is in viewport
+        if (isInViewport) {
+          animateFrom(eleme);
+        }
+      });
+    });
   });
 }
 
 export const revealAnimation = setRevealAnimation;
+export const cleanupRevealAnimation = cleanupRevealAnimationInternal;
 // export const horizontalAnim = setHorizontalSectionAnimation;

@@ -5,25 +5,31 @@ import { Flex, FlexCenter } from "@/components/styled/flex.styled";
 import { Heading, Paragraph } from "../styled/text.styled";
 import { Button } from "../styled/button.styled";
 import Link from "next/link";
+import styled from "styled-components";
+
 type FooterProps = {
   updateContactFormToggle: Function;
 };
 
 type ScheduleMeetingCTAProps = FooterProps;
 
+const StyledLink = styled(Link)`
+  text-decoration: none;
+`;
+
+const GreenSpan = styled.span`
+  color: #6dd26d;
+`;
+
+const SocialImage = styled.img`
+  width: 2rem;
+`;
+
 export default function Footer({ updateContactFormToggle }: FooterProps) {
   return (
     <Section className="footer" mode="dark">
-      {/* section heading */}
-      {/* <SectionHeading mode="light" title="connect();" tagline="get a quote" /> */}
-
-      {/* schedule meeting - CTA */}
       <ScheduleMeetingCTA updateContactFormToggle={() => updateContactFormToggle()} />
-
-      {/* point of contact */}
       <PointOfContact />
-
-      {/* footer links */}
       <FooterLinks />
     </Section>
   );
@@ -42,7 +48,6 @@ function FooterLinks() {
       fontSize: "1.3rem",
     },
   };
-  const imageStyles = { width: "2rem" };
 
   return (
     <Flex custom={{ position: "absolute", bottom: 0, left: 0, width: "100%" }} customMobile={{ flexDirection: "row", position: "relative", flexWrap: "wrap", marginTop: "2rem" }}>
@@ -54,35 +59,35 @@ function FooterLinks() {
       </FlexCenter>
 
       <FlexCenter custom={custom} customMobile={customMobile}>
-        <Link href="/terms-of-service" style={{ textDecoration: "none" }}>
+        <StyledLink href="/terms-of-service">
           <Paragraph custom={textStyles.desktop} customMobile={textStyles.mobile}>
             {" "}
             terms and conditions{" "}
           </Paragraph>
-        </Link>
+        </StyledLink>
       </FlexCenter>
 
       <FlexCenter custom={custom} customMobile={customMobile}>
-        <Link href="/privacy-policy" style={{ textDecoration: "none" }}>
+        <StyledLink href="/privacy-policy">
           <Paragraph custom={textStyles.desktop} customMobile={textStyles.mobile}>
             {" "}
             privacy policy{" "}
           </Paragraph>
-        </Link>
+        </StyledLink>
       </FlexCenter>
 
       <FlexCenter custom={{ ...custom, gap: "2rem" }} customMobile={customMobile}>
         <a href="https://instagram.com/saibbyweb" target="_blank">
-          <img style={imageStyles} src="/images/social/1.svg" />{" "}
+          <SocialImage src="/images/social/1.svg" />{" "}
         </a>
         <a href="https://facebook.com/saibbyweb" target="_blank">
-          <img style={imageStyles} src="/images/social/2.svg" />{" "}
+          <SocialImage src="/images/social/2.svg" />{" "}
         </a>
         <a href="https://linkedin.com/company/saibbyweb" target="_blank">
-          <img style={imageStyles} src="/images/social/3.svg" />{" "}
+          <SocialImage src="/images/social/3.svg" />{" "}
         </a>
         <a href="https:/twitter.com/saibbyweb" target="_blank">
-          <img style={imageStyles} src="/images/social/4.svg" />{" "}
+          <SocialImage src="/images/social/4.svg" />{" "}
         </a>
       </FlexCenter>
     </Flex>
@@ -98,7 +103,6 @@ type ContactPointProps = {
 
 function ContactPoint({ label, value, width, invertColors }: ContactPointProps) {
   const colors = { primary: "gray", secondary: "white" };
-  /* invert colors */
   if (invertColors) {
     const temp = colors.primary;
     colors.primary = colors.secondary;
@@ -118,28 +122,22 @@ function ContactPoint({ label, value, width, invertColors }: ContactPointProps) 
 function PointOfContact() {
   return (
     <FlexCenter width="93%" height="100px" custom={{ gap: "1rem", marginTop: "4%", marginLeft: "10%" }} customMobile={{ flexWrap: "wrap", height: "auto" }}>
-      {/* address */}
       <ContactPoint invertColors label="⛰️ Kashmir, India" value="207 & 209 - Saudi Sheikh Complex, NH1A, Chanpora, Bypass, Srinagar, Jammu & Kashmir, 190015" width="35%" />
-      {/* email */}
       <ContactPoint label="email us at" value="hello@saibbyweb.com" />
-      {/* phone number */}
       <ContactPoint label="call us on" value="+91-8082007711" />
     </FlexCenter>
   );
 }
 
 function ScheduleMeetingCTA({ updateContactFormToggle }: ScheduleMeetingCTAProps) {
-  //  console.log(updateContactFormToggle());
   return (
     <Flex col custom={{ marginTop: "8%", padding: "0 10%" }}>
-      {/* heading container */}
       <Flex width="60%" customMobile={{ width: "100%" }}>
         <Heading fontSize="5.2rem" lineHeight="5.2rem" width="50%">
-          Have an idea? <br></br> Let's <span style={{ color: "#6dd26d" }}> connect.</span>
+          Have an idea? <br></br> Let's <GreenSpan> connect.</GreenSpan>
         </Heading>
       </Flex>
 
-      {/* paragraph container */}
       <Flex width="65%">
         <Paragraph
           color="#c9c7c7"
@@ -154,7 +152,6 @@ function ScheduleMeetingCTA({ updateContactFormToggle }: ScheduleMeetingCTAProps
         </Paragraph>
       </Flex>
 
-      {/* actions */}
       <Flex custom={{ gap: "1rem" }}>
         <Button onClick={() => updateContactFormToggle()}> schedule meeting </Button>
       </Flex>

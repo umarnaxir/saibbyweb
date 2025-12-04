@@ -1,42 +1,23 @@
 import { CSSValues } from "@/lib/styles/globalStyles";
 import styled from "styled-components";
-
 export const MenuClose = styled.div.withConfig({
-  shouldForwardProp: (prop) => !['custom', 'customMobile', 'bg', 'noMobile', 'onlyMobile'].includes(prop),
+  shouldForwardProp: (prop) =>
+    !["custom", "customMobile", "bg", "noMobile", "onlyMobile"].includes(prop),
 })<CSSValues>`
-
-    /* display: none; */
     position: absolute;
-    /* height: 200px; */
-     /* width: 100px; */
     padding: 10px 40px;
     cursor: pointer;
-  top: 3%;
-  right: 5%;
-  width: 2%;
-  transition: background-color 0.3s ease-in-out;
-  &:hover {
-        background-color: #efefef;
-    }
-
-    &:hover .first {
-        animation: first 0.6s;
-    }
-
-    &:hover .second {
-        animation: second 0.6s;
-    }
-
-
+    top: 3%;
+    right: 5%;
+    width: 2%;
+    transition: background-color 0.3s ease-in-out;
 
     div {
-        width: 4px;
-        height: 100%;
+        width: 16px;
         height: 50px;
         position: relative;
         animation: load-close 2s;
  
-
         span {
             position: absolute;
             height: 100%;
@@ -49,16 +30,12 @@ export const MenuClose = styled.div.withConfig({
             left: 0;
             top: 0;
             transform: rotate(45deg);
-
-
         }
 
         .second {
             right: 0;
             top: 0;
             transform: rotate(-45deg);
-
-
         }
 
     }
@@ -96,4 +73,4 @@ export const MenuClose = styled.div.withConfig({
     100% {
         transform: scale(1) rotate(-720deg);
     }
-`
+`;

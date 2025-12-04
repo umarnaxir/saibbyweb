@@ -1,6 +1,5 @@
 import styled from "styled-components";
-import { FontAlias, fonts, CSSValues, generateCustomCSS, Font } from "@/lib/styles/globalStyles";
-import { receiveCustomCSS } from "./flex.styled";
+import { FontAlias, fonts, CSSValues, generateCustomCSS } from "@/lib/styles/globalStyles";
 
 export const Input = styled.input.withConfig({
   shouldForwardProp: (prop) => !['custom', 'customMobile', 'font'].includes(prop),
@@ -23,9 +22,6 @@ export const Input = styled.input.withConfig({
         background-color: gray;
     }
 
-    /* generate css from custom css properties */
     ${(props: any) => generateCustomCSS(props.custom)}
     ${(props: any) => generateCustomCSS(props.customMobile, "mobile")}
-
-   // ${(props) => receiveCustomCSS(props)}
 `

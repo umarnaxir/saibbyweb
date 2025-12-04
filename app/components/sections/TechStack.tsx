@@ -148,7 +148,6 @@ export default function TechStack() {
         setDesktopAnimationForTechStack(setParentST);
       },
       "(max-width: 768px)": function () {
-        //  revealAnimation();
       },
     });
   }, []);
