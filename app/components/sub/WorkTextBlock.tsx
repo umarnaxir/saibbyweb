@@ -53,16 +53,13 @@ const chipStyleMobile: CSSValues = {
 
 const ParentStyles = (index: number): CSSValues => ({
     padding: '1% 3%',
-    // padding: '1% 5%', 
     marginLeft: '2%',
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
     width: '50%',
     height: '100%',
     overflow: 'hidden',
     justifyContent: 'center',
-    opacity: index === 0 ? '1' : '0',
-    transform: index === 0 ? '' : 'translateY(100%)',
+    display: 'flex',
+    // Opacity, transform, and visibility will be controlled by GSAP
     zIndex: 2
 })
 

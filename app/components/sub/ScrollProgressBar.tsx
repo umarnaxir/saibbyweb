@@ -13,10 +13,10 @@ type ScrollProgressBarProps = {
   scrollTrigger?: ScrollTrigger.Vars;
 };
 
-const ProgressBarInner = styled.div<{ barColor: string }>`
+const ProgressBarInner = styled.div<{ $barColor: string }>`
   height: 100%;
   width: 0;
-  background-color: ${(props) => props.barColor};
+  background-color: ${(props) => props.$barColor};
 `;
 
 function ScrollProgressBar({ bg = "black", barColor = "#00ff4c", className, scrollTrigger }: ScrollProgressBarProps) {
@@ -49,7 +49,7 @@ function ScrollProgressBar({ bg = "black", barColor = "#00ff4c", className, scro
       customMobile={{ width: "1vw" }}
       className={className}
     >
-      <ProgressBarInner className={`${className}__inner`} barColor={barColor} />
+      <ProgressBarInner className={`${className}__inner`} $barColor={barColor} />
     </Flex>
   );
 }

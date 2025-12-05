@@ -1,5 +1,4 @@
-import styled, { CSSProperties, useTheme } from "styled-components";
-import { StyledTheme } from "@/components/sub/Section";
+import { CSSProperties } from "styled-components";
 import { Flex, FlexCenter } from "@/components/styled/flex.styled";
 import { Heading, Paragraph, Text } from "@/components/styled/text.styled";
 import { Button } from "@/components/styled/button.styled";
@@ -42,8 +41,6 @@ const serviceCardMobileStyles: CSSProperties = {
 
 /* sub service name */
 function SubServiceName({ bit1, bit2, lastOne }: SubService) {
-    const theme = useTheme() as StyledTheme;
-
     return (
         <Paragraph
             key={bit1}
@@ -114,7 +111,7 @@ function ServiceCard({ name, description, subServices, image, onClick}: ServiceD
                 width="55%"
                 bgImage={'/images/services/' + image}
                 height="100%"
-                custom={{backgroundSize: '100', backgroundRepeat: 'no-repeat'}}
+                custom={{backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat'}}
                 customMobile={{ height: '55%', width: '100%' }}
             >
             </Flex>

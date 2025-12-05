@@ -8,7 +8,7 @@ import Link from "next/link";
 import styled from "styled-components";
 
 type FooterProps = {
-  updateContactFormToggle: Function;
+  updateContactFormToggle: () => void;
 };
 
 type ScheduleMeetingCTAProps = FooterProps;
@@ -121,7 +121,7 @@ function ContactPoint({ label, value, width, invertColors }: ContactPointProps) 
 
 function PointOfContact() {
   return (
-    <FlexCenter width="93%" height="100px" custom={{ gap: "1rem", marginTop: "4%", marginLeft: "10%" }} customMobile={{ flexWrap: "wrap", height: "auto" }}>
+    <FlexCenter width="93%"  custom={{ gap: "1rem", marginTop: "4%", marginLeft: "10%" }} customMobile={{ flexWrap: "wrap", height: "auto" }}>
       <ContactPoint invertColors label="⛰️ Kashmir, India" value="207 & 209 - Saudi Sheikh Complex, NH1A, Chanpora, Bypass, Srinagar, Jammu & Kashmir, 190015" width="35%" />
       <ContactPoint label="email us at" value="hello@saibbyweb.com" />
       <ContactPoint label="call us on" value="+91-8082007711" />
@@ -134,7 +134,7 @@ function ScheduleMeetingCTA({ updateContactFormToggle }: ScheduleMeetingCTAProps
     <Flex col custom={{ marginTop: "8%", padding: "0 10%" }}>
       <Flex width="60%" customMobile={{ width: "100%" }}>
         <Heading fontSize="5.2rem" lineHeight="5.2rem" width="50%">
-          Have an idea? <br></br> Let's <GreenSpan> connect.</GreenSpan>
+          Have an idea? <br></br> Let&apos;s <GreenSpan> connect.</GreenSpan>
         </Heading>
       </Flex>
 
