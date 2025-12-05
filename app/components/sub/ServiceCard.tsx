@@ -87,7 +87,7 @@ function ServiceNameAndDescription({ name, description }: { name: string; descri
 
 function ServiceCard({ name, description, subServices, image, onClick}: ServiceDetails) {
     return (
-        <Flex className="service-card reveal" custom={serviceContainerStyles} customMobile={serviceCardMobileStyles}>
+        <Flex className="service-card" custom={serviceContainerStyles} customMobile={serviceCardMobileStyles}>
             {/* text section */}
             <Flex col custom={textSectionStyles.regular} customMobile={textSectionStyles.mobile}>
                 {/* text block */}

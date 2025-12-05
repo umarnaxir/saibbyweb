@@ -5,7 +5,8 @@ export const Logo = styled.div`
   background-image: url("/images/logo-light.png");
   position: absolute;
   top: 7%;
-  left: 10%;
+  left: 50%;
+  transform: translateX(-50%);
   width: 45%;
   aspect-ratio: 1;
   z-index: 900;
@@ -21,5 +22,6 @@ export const Logo = styled.div`
     height: 64.5%;
     aspect-ratio: 1;
     left: 5%;
+    transform: none;
   }
 `;

@@ -11,7 +11,7 @@ export default function SWHeader({toggleMenu}: SWHeaderProps) {
     <Flex
       className="sw-header "
       custom={{ 
-        width: "10%",
+        width: "8%",
         position: "fixed",
         left: 0,
         top: 0,

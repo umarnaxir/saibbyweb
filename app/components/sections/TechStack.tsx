@@ -1,9 +1,10 @@
 "use client";
 
+import React from "react";
 import Section from "@/components/sub/Section";
 import SectionHeading from "@/components/sub/SectionHeading";
 import { FlexCenter } from "@/components/styled/flex.styled";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import gsap from "gsap";
 import ScrollProgressBar from "@/components/sub/ScrollProgressBar";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -99,17 +100,75 @@ function setDesktopAnimationForTechStack(setParentST: (vars: ScrollTrigger.Vars)
 
 export default function TechStack() {
   const [parentST, setParentST] = useState<ScrollTrigger.Vars>({});
+  const resizeTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
   const setAnimation = useCallback((node: HTMLDivElement) => {
     if (node === null) return;
 
-    ScrollTrigger.matchMedia({
-      "(min-width: 768px)": function () {
-        setDesktopAnimationForTechStack(setParentST);
-      },
-      "(max-width: 768px)": function () {
-      },
+    // Clean up any existing ScrollTriggers first
+    // Kill any ScrollTriggers related to tech-stack
+    ScrollTrigger.getAll().forEach(st => {
+      const trigger = st.trigger;
+      if (trigger && (trigger as HTMLElement).classList?.contains('tech-stack')) {
+        st.kill();
+      }
     });
+
+    // Wait for DOM to be ready
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        ScrollTrigger.matchMedia({
+          "(min-width: 768px)": function () {
+            setDesktopAnimationForTechStack(setParentST);
+          },
+          "(max-width: 768px)": function () {
+          },
+        });
+
+        // Debounce refresh to prevent conflicts
+        requestAnimationFrame(() => {
+          ScrollTrigger.refresh();
+        });
+      });
+    });
+  }, []);
+
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (resizeTimeoutRef.current) {
+        clearTimeout(resizeTimeoutRef.current);
+      }
+      resizeTimeoutRef.current = setTimeout(() => {
+        ScrollTrigger.refresh();
+      }, 150);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (resizeTimeoutRef.current) {
+        clearTimeout(resizeTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      // Kill any remaining ScrollTriggers related to tech-stack
+      ScrollTrigger.getAll().forEach(st => {
+        const trigger = st.trigger;
+        if (trigger && (trigger as HTMLElement).classList?.contains('tech-stack')) {
+          st.kill();
+        }
+      });
+      
+      // Refresh to restore scroll
+      requestAnimationFrame(() => {
+        ScrollTrigger.refresh();
+      });
+    };
   }, []);
 
   return (

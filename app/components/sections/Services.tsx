@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState, useEffect } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Section from "@/components/sub/Section";
@@ -16,9 +16,26 @@ type ServicesProps = {
 
 function Services({showContactForm}: ServicesProps) {
     const [parentST, setParentST] = useState<ScrollTrigger.Vars>({});
+    const refreshHandlerRef = React.useRef<(() => void) | null>(null);
+    const resizeTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
     const setAnimation = useCallback((node: HTMLDivElement | null) => {
         if (node === null) return;
+
+        // Clean up any existing ScrollTriggers first
+        // Kill any ScrollTriggers related to services
+        ScrollTrigger.getAll().forEach(st => {
+            const trigger = st.trigger;
+            if (trigger && (trigger as HTMLElement).classList?.contains('services')) {
+                st.kill();
+            }
+        });
+
+        // Remove old refresh handler if exists
+        if (refreshHandlerRef.current) {
+            ScrollTrigger.removeEventListener("refreshInit", refreshHandlerRef.current);
+            refreshHandlerRef.current = null;
+        }
 
         const initializeAnimations = () => {
             const sections = gsap.utils.toArray<HTMLElement>(".service-card");
@@ -27,95 +44,93 @@ function Services({showContactForm}: ServicesProps) {
                 return;
             }
 
-            // Wait a bit more for layout to settle
-            requestAnimationFrame(() => {
-                let maxWidth = 0;
-                const calculateTotalWidthOfSections = () => {
-                    maxWidth = 0;
-                    sections.forEach((sec, index) => {
-                        if (sec) {
-                            // Force reflow to get accurate measurements
-                            const width = sec.offsetWidth || sec.getBoundingClientRect().width;
-                            if (width > 0) {
-                                maxWidth += width;
-                                // Add gap between cards (2rem = 32px) for each card except the last
-                                if (index < sections.length - 1) {
-                                    maxWidth += 32;
-                                }
-                            }
-                        }
+            // Explicitly ensure all service cards are visible
+            sections.forEach((section) => {
+                if (section) {
+                    gsap.set(section, { 
+                        opacity: 1, 
+                        visibility: 'visible',
+                        autoAlpha: 1
                     });
-                };
-
-                calculateTotalWidthOfSections();
-                
-                // Retry if width calculation failed
-                if (maxWidth === 0) {
-                    setTimeout(initializeAnimations, 200);
-                    return;
                 }
+            });
 
-                ScrollTrigger.addEventListener("refreshInit", calculateTotalWidthOfSections);
-
-                const track = document.querySelector(".services-track") as HTMLElement;
-                if (!track) {
-                    setTimeout(initializeAnimations, 100);
-                    return;
-                }
-
-                // Set track width to fit all cards - use inline style for reliability
-                track.style.width = `${maxWidth}px`;
-                gsap.set(track, { 
-                    x: 0,
-                    opacity: 1,
-                    visibility: 'visible'
-                });
-
-                ScrollTrigger.matchMedia({
-                    "(min-width: 768px)": function () {
-                        const viewportWidth = window.innerWidth;
-                        const totalScrollDistance = Math.max(0, maxWidth - viewportWidth);
-                        
-                        // Calculate scroll end distance - enough to show all cards
-                        const scrollEndDistance = totalScrollDistance + 200; // Extra padding
-                        
-                        const servicesScrollTrigger: ScrollTrigger.Vars = {
-                            trigger: ".services",
-                            scrub: 1,
-                            pin: true,
-                            start: "top top",
-                            end: () => `+=${scrollEndDistance}`,
-                            invalidateOnRefresh: true
-                        };
-
-                        setHorizontalSectionAnimation(sections, maxWidth, servicesScrollTrigger);
-                        
-                        // Header animations - desktop only
-                        gsap.fromTo(['.sw-header'], 
-                            {
-                                width: '10%'
-                            },
-                            {
-                                width: '7%',
-                                scrollTrigger: {
-                                    trigger: ".services",
-                                    start: () => "top top",
-                                    end: () => "top+=100",
-                                    scrub: 1
+            // Wait for layout to settle with double RAF
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    let maxWidth = 0;
+                    const calculateTotalWidthOfSections = () => {
+                        maxWidth = 0;
+                        sections.forEach((sec, index) => {
+                            if (sec) {
+                                // Force reflow to get accurate measurements
+                                const width = sec.offsetWidth || sec.getBoundingClientRect().width;
+                                if (width > 0) {
+                                    maxWidth += width;
+                                    // Add gap between cards (2rem = 32px) for each card except the last
+                                    if (index < sections.length - 1) {
+                                        maxWidth += 32;
+                                    }
                                 }
                             }
-                        );
+                        });
+                    };
 
-                        const container = document.querySelector('.main-container') as HTMLElement;
-                        if (container) {
-                            gsap.fromTo(container,
+                    calculateTotalWidthOfSections();
+                    
+                    // Retry if width calculation failed
+                    if (maxWidth === 0) {
+                        setTimeout(initializeAnimations, 200);
+                        return;
+                    }
+
+                    // Store refresh handler for cleanup
+                    refreshHandlerRef.current = () => calculateTotalWidthOfSections();
+                    ScrollTrigger.addEventListener("refreshInit", refreshHandlerRef.current);
+
+                    const track = document.querySelector(".services-track") as HTMLElement;
+                    if (!track) {
+                        setTimeout(initializeAnimations, 100);
+                        return;
+                    }
+
+                    // Set track width to fit all cards - use inline style for reliability
+                    track.style.width = `${maxWidth}px`;
+                    gsap.set(track, { 
+                        x: 0,
+                        opacity: 1,
+                        visibility: 'visible'
+                    });
+
+                    ScrollTrigger.matchMedia({
+                        "(min-width: 768px)": function () {
+                            const servicesScrollTrigger: ScrollTrigger.Vars = {
+                                trigger: ".services",
+                                scrub: 1,
+                                pin: true,
+                                pinSpacing: true,
+                                start: "top top",
+                                end: () => {
+                                    // Recalculate on each refresh for accuracy
+                                    const currentViewportWidth = window.innerWidth;
+                                    const currentMaxWidth = maxWidth;
+                                    const currentTotalScrollDistance = Math.max(0, currentMaxWidth - currentViewportWidth);
+                                    // Add extra padding (20% of viewport) to ensure all cards are fully visible
+                                    return `+=${currentTotalScrollDistance + (currentViewportWidth * 0.2)}`;
+                                },
+                                invalidateOnRefresh: true,
+                                anticipatePin: 1
+                            };
+
+                            setHorizontalSectionAnimation(sections, maxWidth, servicesScrollTrigger);
+                            
+                            // Header animations - desktop only
+                            gsap.fromTo(['.sw-header'], 
                                 {
-                                    marginLeft: '10%',
-                                    width: '90%'
+                                    width: '8%'
                                 },
                                 {
-                                    marginLeft: '7%',
-                                    width: '93%',
+                                    width: '5%',
                                     scrollTrigger: {
                                         trigger: ".services",
                                         start: () => "top top",
@@ -124,59 +139,107 @@ function Services({showContactForm}: ServicesProps) {
                                     }
                                 }
                             );
+
+                            const container = document.querySelector('.main-container') as HTMLElement;
+                            if (container) {
+                                gsap.fromTo(container,
+                                    {
+                                        marginLeft: '8%',
+                                        width: '92%'
+                                    },
+                                    {
+                                        marginLeft: '5%',
+                                        width: '95%',
+                                        scrollTrigger: {
+                                            trigger: ".services",
+                                            start: () => "top top",
+                                            end: () => "top+=100",
+                                            scrub: 1
+                                        }
+                                    }
+                                );
+                            }
+
+                            const stCopy = { ...servicesScrollTrigger };
+                            delete stCopy['pin'];
+                            setParentST(stCopy);
+                        },
+                        "(max-width: 768px)": function() {
+                            // Mobile: Only animate header height, not width
+                            gsap.set(['.sw-header'], { clearProps: 'width' });
+                            
+                            gsap.to(['.sw-header'], {
+                                height: '13vw',
+                                scrollTrigger: {
+                                    trigger: ".services",
+                                    start: () => "top center+=100",
+                                    end: () => "top+=100",
+                                    scrub: 1
+                                }
+                            });
                         }
+                    });
 
-                        gsap.to(['.sw-menu,.sw-logo'], {
-                            marginLeft: 0,
-                            scrollTrigger: {
-                                trigger: ".services",
-                                start: () => "top center-=center",
-                                end: () => "top+=80",
-                                scrub: 1
-                            }
-                        });
-
-                        const stCopy = { ...servicesScrollTrigger };
-                        delete stCopy['pin'];
-                        setParentST(stCopy);
-                    },
-                    "(max-width: 768px)": function() {
-                        // Mobile: Only animate header height, not width
-                        gsap.set(['.sw-header'], { clearProps: 'width' });
-                        
-                        gsap.to(['.sw-header'], {
-                            height: '13vw',
-                            scrollTrigger: {
-                                trigger: ".services",
-                                start: () => "top center+=100",
-                                end: () => "top+=100",
-                                scrub: 1
-                            }
-                        });
-                    }
+                    // Debounce refresh to prevent conflicts
+                    requestAnimationFrame(() => {
+                        ScrollTrigger.refresh();
+                    });
                 });
-
-                ScrollTrigger.refresh();
             });
         };
 
-        requestAnimationFrame(initializeAnimations);
+        // Small delay to ensure DOM is ready
+        setTimeout(() => {
+            requestAnimationFrame(initializeAnimations);
+        }, 50);
+    }, []);
+
+    // Handle window resize
+    useEffect(() => {
+        const handleResize = () => {
+            if (resizeTimeoutRef.current) {
+                clearTimeout(resizeTimeoutRef.current);
+            }
+            resizeTimeoutRef.current = setTimeout(() => {
+                ScrollTrigger.refresh();
+            }, 150);
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => {
+            window.removeEventListener('resize', handleResize);
+            if (resizeTimeoutRef.current) {
+                clearTimeout(resizeTimeoutRef.current);
+            }
+        };
     }, []);
 
     // Cleanup on unmount
     useEffect(() => {
         return () => {
+            // Remove refresh handler
+            if (refreshHandlerRef.current) {
+                ScrollTrigger.removeEventListener("refreshInit", refreshHandlerRef.current);
+                refreshHandlerRef.current = null;
+            }
+
+            // Kill any remaining ScrollTriggers related to services
             ScrollTrigger.getAll().forEach(st => {
                 const trigger = st.trigger;
                 if (trigger && (trigger as HTMLElement).classList?.contains('services')) {
                     st.kill();
                 }
             });
+            
+            // Refresh to restore scroll
+            requestAnimationFrame(() => {
+                ScrollTrigger.refresh();
+            });
         };
     }, []);
 
     return (
-        <Section ref={setAnimation} className="services" mode="light">
+        <Section ref={setAnimation} className="services" mode="light" >
             <SectionHeading title="whatWeDo();" tagline="our services" />
             
             {Object.keys(parentST).length > 0 && (
@@ -227,27 +290,23 @@ function setHorizontalSectionAnimation(sections: HTMLElement[], maxWidth: number
     if (!track) return;
 
     // Ensure track starts at correct position and is visible
-    gsap.set(track, { x: 0, opacity: 1, visibility: 'visible' });
-
-    // Initial reveal animation - completes before main scroll starts
-    gsap.fromTo(
-        track,
-        { 
-            x: 200, 
-            opacity: 0.6 
-        },
-        {
-            x: 0,
-            opacity: 1,
-            ease: "none",
-            scrollTrigger: {
-                trigger: ".services",
-                scrub: 1,
-                start: "top bottom",
-                end: "top top-=50", // End slightly before main scroll starts
-            },
+    gsap.set(track, { 
+        x: 0, 
+        opacity: 1, 
+        visibility: 'visible',
+        clearProps: 'transform'
+    });
+    
+    // Ensure all service cards are visible
+    sections.forEach((section) => {
+        if (section) {
+            gsap.set(section, { 
+                opacity: 1, 
+                visibility: 'visible',
+                autoAlpha: 1
+            });
         }
-    );
+    });
 
     // Main horizontal scroll animation
     const viewportWidth = window.innerWidth;

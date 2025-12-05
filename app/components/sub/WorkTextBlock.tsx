@@ -24,10 +24,9 @@ const projectNumberStyles: CSSValues = {
 
 const projectNameStyles: CSSValues = {
     textAlign: 'left',
-    // fontSize: '80px',
-    fontSize: "100px",
+    fontSize: "70px",
     width: '400px',
-    lineHeight: '100px'
+    lineHeight: '70px'
 
 }
 
@@ -85,7 +84,7 @@ function WorkTextBlock({ number, name, description, techStack, className, link }
             {/* project number */}
             <Heading custom={projectNumberStyles} customMobile={{ fontSize: '4.5rem', lineHeight: '4.5rem' }}> 0{number} </Heading>
             {/* project name */}
-            <Heading color={theme.color} custom={projectNameStyles} customMobile={{ fontSize: '4.3rem', lineHeight: '4.3rem' }}> {name}  </Heading>
+            <Heading color={theme.color} custom={projectNameStyles} customMobile={{ fontSize: '3.5rem', lineHeight: '3.5rem' }}> {name}  </Heading>
             {/* project description */}
             <Paragraph color={theme.color} custom={paragraphStyles} customMobile={{ fontSize: '1.3rem' }}> {description} </Paragraph>
             {/* tech stack */}

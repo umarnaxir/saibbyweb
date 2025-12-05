@@ -4,7 +4,8 @@ import MenuIcon from "@/components/sub/MenuIcon";
 
 export const Hamburger = styled(MenuIcon)`
   position: absolute;
-  left: 10%;
+  left: 50%;
+  transform: translateX(-50%);
   bottom: 8%;
   width: 35%;
   aspect-ratio: 1;
@@ -26,6 +27,7 @@ export const Hamburger = styled(MenuIcon)`
     left: auto;
     right: 7%;
     bottom: auto;
+    transform: none;
 
     span {
       font-size: 7px;

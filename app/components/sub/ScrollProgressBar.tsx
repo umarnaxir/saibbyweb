@@ -20,28 +20,53 @@ const ProgressBarInner = styled.div<{ $barColor: string }>`
 `;
 
 function ScrollProgressBar({ bg = "black", barColor = "#00ff4c", className, scrollTrigger }: ScrollProgressBarProps) {
-  const setAnimation = useCallback(
+  const scrollTriggerRef = useCallback(
     (node: HTMLDivElement | null) => {
-      if (node === null || !scrollTrigger) return;
+      if (node === null || !scrollTrigger || Object.keys(scrollTrigger).length === 0) return;
 
-      gsap.fromTo(
-        "." + className + "__inner",
-        { width: 0 },
-        {
-          width: "100%",
-          ease: "none",
-          scrollTrigger: {
-            ...scrollTrigger,
-          },
+      // Wait for DOM to be ready
+      requestAnimationFrame(() => {
+        const innerElement = node.querySelector("." + className + "__inner") as HTMLElement;
+        if (!innerElement) {
+          // Retry if element not found
+          setTimeout(() => {
+            const retryElement = node.querySelector("." + className + "__inner") as HTMLElement;
+            if (retryElement) {
+              gsap.fromTo(
+                retryElement,
+                { width: 0 },
+                {
+                  width: "100%",
+                  ease: "none",
+                  scrollTrigger: {
+                    ...scrollTrigger,
+                  },
+                }
+              );
+            }
+          }, 100);
+          return;
         }
-      );
+
+        gsap.fromTo(
+          innerElement,
+          { width: 0 },
+          {
+            width: "100%",
+            ease: "none",
+            scrollTrigger: {
+              ...scrollTrigger,
+            },
+          }
+        );
+      });
     },
     [scrollTrigger, className]
   );
 
   return (
     <Flex
-      ref={setAnimation}
+      ref={scrollTriggerRef}
       noMobile
       height="0.6rem"
       width="100vw"

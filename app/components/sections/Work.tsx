@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import Section from "@/components/sub/Section";
 import gsap from "gsap";
 import SectionHeading from "@/components/sub/SectionHeading";
@@ -16,6 +17,7 @@ registerScrollTrigger();
 
 function Work() {
   const [parentST, setParentST] = useState<ScrollTrigger.Vars>({});
+  const resizeTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
   const workImages = useMemo(() => [
     "dababel-img.avif",
@@ -34,6 +36,15 @@ function Work() {
 
   const setAnimation = useCallback((node: HTMLDivElement | null) => {
     if (node === null) return;
+
+    // Clean up any existing ScrollTriggers first
+    // Kill any ScrollTriggers related to work
+    ScrollTrigger.getAll().forEach(st => {
+      const trigger = st.trigger;
+      if (trigger && (trigger as HTMLElement).classList?.contains('work')) {
+        st.kill();
+      }
+    });
 
     const initializeAnimations = () => {
       const workImageElements = gsap.utils.toArray<HTMLElement>(".work-image");
@@ -71,7 +82,10 @@ function Work() {
             },
           });
 
-          ScrollTrigger.refresh();
+          // Debounce refresh to prevent conflicts
+          requestAnimationFrame(() => {
+            ScrollTrigger.refresh();
+          });
         });
       });
     };
@@ -82,14 +96,40 @@ function Work() {
     }, 50);
   }, [workImages, setParentST]);
 
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (resizeTimeoutRef.current) {
+        clearTimeout(resizeTimeoutRef.current);
+      }
+      resizeTimeoutRef.current = setTimeout(() => {
+        ScrollTrigger.refresh();
+      }, 150);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (resizeTimeoutRef.current) {
+        clearTimeout(resizeTimeoutRef.current);
+      }
+    };
+  }, []);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
+      // Kill any remaining ScrollTriggers related to work
       ScrollTrigger.getAll().forEach(st => {
         const trigger = st.trigger;
         if (trigger && (trigger as HTMLElement).classList?.contains('work')) {
           st.kill();
         }
+      });
+      
+      // Refresh to restore scroll
+      requestAnimationFrame(() => {
+        ScrollTrigger.refresh();
       });
     };
   }, []);
@@ -197,7 +237,8 @@ function Work() {
 }
 
 function setDesktopAnimationForWorkSection(workImages: string[], isMobile: boolean, setParentST: (st: ScrollTrigger.Vars) => void) {
-  const windowInnerHeight = isMobile ? window.innerHeight / 1.3 : window.innerHeight;
+  const windowInnerHeight = window.innerHeight;
+  const scrollDistance = windowInnerHeight * 1.2; // Each card gets 1.2x viewport height
   
   const workImageElements: HTMLElement[] = gsap.utils.toArray(".work-image");
   const workTextBlocks: HTMLElement[] = gsap.utils.toArray(".work-text");
@@ -209,14 +250,6 @@ function setDesktopAnimationForWorkSection(workImages: string[], isMobile: boole
     console.warn("No work elements found");
     return;
   }
-
-  // Kill any existing ScrollTriggers for work section
-  ScrollTrigger.getAll().forEach(st => {
-    const trigger = st.trigger;
-    if (trigger && (trigger as HTMLElement).classList?.contains('work')) {
-      st.kill();
-    }
-  });
 
   /* set initial z-index for project containers, images and text blocks */
   projectContainers.forEach((container, i) => {
@@ -291,9 +324,9 @@ function setDesktopAnimationForWorkSection(workImages: string[], isMobile: boole
     
     // Set initial state for reveal animation (start slightly scaled and translated)
     gsap.set([workImageElements[0], workTextBlocks[0]], {
-      yPercent: 60,
-      scale: 1.2,
-      opacity: 0.8
+      yPercent: 30,
+      scale: 1.1,
+      opacity: 0.9
     });
     
     // Animate first card into view
@@ -301,99 +334,70 @@ function setDesktopAnimationForWorkSection(workImages: string[], isMobile: boole
       scale: 1, 
       opacity: 1,
       yPercent: 0,
-      ease: 'none',
+      ease: 'power2.out',
+      duration: 0.8,
       scrollTrigger: {
         scrub: 1, 
         trigger: '.work',
-        start: 'top bottom-=100',
-        end: 'top center-=150',
-        // markers: true
+        start: 'top bottom-=50',
+        end: 'top center',
       },
     });
   }
 
-  let finalPoint: number = 0;
+  // Calculate total scroll distance needed
+  const totalScrollDistance = scrollDistance * totalWorkElements;
 
-  [...Array(totalWorkElements)].forEach((_, i) => {
-    if (i === totalWorkElements - 1) {
-      /* for the last element, just update final point */
-      const startPoint = 0 + windowInnerHeight * i + windowInnerHeight * 0.6 * (i + 1);
-      finalPoint = startPoint + windowInnerHeight;
-      return;
-    }
+  // Create scroll triggers for each card transition
+  [...Array(totalWorkElements - 1)].forEach((_, i) => {
+    const startPoint = scrollDistance * (i + 1);
+    const endPoint = startPoint + scrollDistance;
 
-    /* calculate start point */
-    const startPoint = 0 + windowInnerHeight * i + windowInnerHeight * 0.6 * (i + 1);
-
-    /* update final point */
-    finalPoint = startPoint + windowInnerHeight;
-
-    /* set scroll trigger options */
-    const scrollTrigger = () => ({
-      snap: {
-        snapTo: 1,
-        duration: 0.55
-      },
+    /* base scroll trigger options */
+    const getScrollTriggerConfig = () => ({
       scrub: 1,
       trigger: ".work",
-      // markers: { startColor: colors[i + 1] ?? 'red', endColor: "red", fontSize: ((2 * i) + 10) + "px" },
-      start: () => `top+=${startPoint}`,
-      end: () => `top+=${startPoint + windowInnerHeight}`,
+      start: () => `top+=${startPoint} top`,
+      end: () => `top+=${endPoint} top`,
+      invalidateOnRefresh: true,
     });
 
-    const imageUpdate = isMobile ? {} : { height: 0 };
+    // Create a timeline for synchronized animations
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        ...getScrollTriggerConfig(),
+        snap: {
+          snapTo: 1,
+          duration: { min: 0.3, max: 0.7 },
+          delay: 0.1,
+          inertia: false
+        },
+      },
+    });
 
-    /* animate work image elements */
+    // Animate current card out
     if (workImageElements[i]) {
-      gsap.to(workImageElements[i], {
-        ease: "none",
-        ...imageUpdate,
+      tl.to(workImageElements[i], {
+        ease: "power2.in",
         opacity: 0,
         visibility: "hidden",
-        scale: 0.9,
-        scrollTrigger: scrollTrigger(),
-      });
+        scale: 0.95,
+        duration: 0.8,
+      }, 0);
     }
-
-    /* animate next image in */
-    if (i + 1 < totalWorkElements && workImageElements[i + 1]) {
-      // Show container before animating
-      if (projectContainers[i + 1]) {
-        gsap.set(projectContainers[i + 1], { 
-          visibility: "visible",
-          display: "flex",
-          opacity: 0
-        });
-      }
-      
-      gsap.fromTo(workImageElements[i + 1], {
-        opacity: 0,
-        visibility: "hidden",
-        scale: 1.1
-      }, {
-        ease: "none",
-        opacity: 1,
-        visibility: "visible",
-        scale: 1,
-        scrollTrigger: scrollTrigger(),
-      });
-    }
-
-    const t1 = gsap.timeline({
-      scrollTrigger: scrollTrigger(),
-    });
 
     if (workTextBlocks[i]) {
-      t1.to(workTextBlocks[i], {
-        ease: "none",
-        yPercent: isMobile ? -70 : -100,
+      tl.to(workTextBlocks[i], {
+        ease: "power2.in",
+        yPercent: -80,
         opacity: 0,
         visibility: "hidden",
-        display: "flex"
-      });
+        duration: 0.8,
+      }, 0);
     }
 
-    if (i + 1 < totalWorkElements && workTextBlocks[i + 1]) {
+    // Animate next card in
+    if (i + 1 < totalWorkElements) {
       // Show container before animating
       if (projectContainers[i + 1]) {
         gsap.set(projectContainers[i + 1], { 
@@ -403,23 +407,40 @@ function setDesktopAnimationForWorkSection(workImages: string[], isMobile: boole
         });
       }
       
-      t1.fromTo(
-        workTextBlocks[i + 1],
-        {
-          yPercent: 100,
+      if (workImageElements[i + 1]) {
+        tl.fromTo(workImageElements[i + 1], {
           opacity: 0,
           visibility: "hidden",
-          display: "flex"
-        },
-        {
-          ease: "none",
-          yPercent: 0,
+          scale: 1.05
+        }, {
+          ease: "power2.out",
           opacity: 1,
           visibility: "visible",
-          display: "flex"
-        },
-        "<"
-      );
+          scale: 1,
+          duration: 0.8,
+        }, 0);
+      }
+
+      if (workTextBlocks[i + 1]) {
+        tl.fromTo(
+          workTextBlocks[i + 1],
+          {
+            yPercent: 100,
+            opacity: 0,
+            visibility: "hidden",
+            display: "flex"
+          },
+          {
+            ease: "power2.out",
+            yPercent: 0,
+            opacity: 1,
+            visibility: "visible",
+            display: "flex",
+            duration: 0.8,
+          },
+          0
+        );
+      }
     }
   });
 
@@ -427,10 +448,11 @@ function setDesktopAnimationForWorkSection(workImages: string[], isMobile: boole
   const workScrollTrigger: ScrollTrigger.Vars = {
     pin: true,
     trigger: ".work",
-    start: () => "top top",
-    end: () => `top+=${finalPoint + 500}`,
-    scrub: 1.2,
+    start: "top top",
+    end: () => `+=${totalScrollDistance}`,
+    scrub: 1,
     invalidateOnRefresh: true,
+    anticipatePin: 1,
   };
 
   /* set parent scroll trigger */
