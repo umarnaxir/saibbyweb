@@ -46,6 +46,9 @@ function Work() {
       }
     });
 
+    // Note: GSAP pin-spacers are managed automatically by ScrollTrigger
+    // No manual cleanup needed - ScrollTrigger handles them properly
+
     const initializeAnimations = () => {
       const workImageElements = gsap.utils.toArray<HTMLElement>(".work-image");
       const workTextBlocks = gsap.utils.toArray<HTMLElement>(".work-text");
@@ -55,6 +58,31 @@ function Work() {
         setTimeout(initializeAnimations, 100);
         return;
       }
+
+      // CRITICAL: Immediately set all elements visible BEFORE any async operations
+      // This prevents disappearing on refresh - elements are visible instantly
+      projectContainers.forEach((container) => {
+        gsap.set(container, { 
+          visibility: "visible",
+          opacity: 1,
+          display: "flex"
+        });
+      });
+      
+      workImageElements.forEach((img, i) => {
+        gsap.set(img, { 
+          opacity: i === 0 ? 1 : 0.2,
+          visibility: "visible"
+        });
+      });
+      
+      workTextBlocks.forEach((block, i) => {
+        gsap.set(block, { 
+          opacity: i === 0 ? 1 : 0.2,
+          visibility: "visible",
+          yPercent: i === 0 ? 0 : 100
+        });
+      });
 
       // Wait for layout to settle and images to load
       requestAnimationFrame(() => {
@@ -82,9 +110,12 @@ function Work() {
             },
           });
 
-          // Debounce refresh to prevent conflicts
+          // Debounce refresh to prevent conflicts with Services section
+          // Add extra delay to ensure Services section pin-spacer is fully cleaned up
           requestAnimationFrame(() => {
-            ScrollTrigger.refresh();
+            requestAnimationFrame(() => {
+              ScrollTrigger.refresh();
+            });
           });
         });
       });
@@ -251,6 +282,32 @@ function setDesktopAnimationForWorkSection(workImages: string[], isMobile: boole
     return;
   }
 
+  // CRITICAL: Immediately set all elements to visible state to prevent disappearing on refresh
+  // This runs BEFORE any animations to ensure elements are always visible
+  projectContainers.forEach((container) => {
+    gsap.set(container, {
+      visibility: "visible",
+      opacity: 1,
+      display: "flex"
+    });
+  });
+  
+  workImageElements.forEach((img, i) => {
+    if (i === 0) {
+      gsap.set(img, { opacity: 1, visibility: "visible" });
+    } else {
+      gsap.set(img, { opacity: 0.2, visibility: "visible" });
+    }
+  });
+  
+  workTextBlocks.forEach((block, i) => {
+    if (i === 0) {
+      gsap.set(block, { opacity: 1, visibility: "visible", yPercent: 0 });
+    } else {
+      gsap.set(block, { opacity: 0.2, visibility: "visible", yPercent: 100 });
+    }
+  });
+
   /* set initial z-index for project containers, images and text blocks */
   projectContainers.forEach((container, i) => {
     if (i === 0) {
@@ -262,11 +319,12 @@ function setDesktopAnimationForWorkSection(workImages: string[], isMobile: boole
         display: "flex"
       });
     } else {
-      // Other containers: hidden but ready
+      // Other containers: Keep visible but ensure children are already visible (at 0.2 opacity)
+      // This prevents blank/black div glitches - container and children both visible from start
       gsap.set(container, { 
         zIndex: totalWorkElements - i,
-        opacity: 0,
-        visibility: "hidden",
+        opacity: 1,  // Container fully opaque - no transparency issues
+        visibility: "visible",  // Visible so children can show
         display: "flex"
       });
     }
@@ -287,9 +345,9 @@ function setDesktopAnimationForWorkSection(workImages: string[], isMobile: boole
       });
     } else {
       gsap.set(block, { 
-        opacity: 0, 
+        opacity: 0.2,  // Changed from 0 to 0.2 - start partially visible to prevent black screen
         yPercent: 100, 
-        visibility: "hidden",
+        visibility: "visible",
         display: "flex"
       });
     }
@@ -306,8 +364,8 @@ function setDesktopAnimationForWorkSection(workImages: string[], isMobile: boole
       });
     } else {
       gsap.set(img, { 
-        opacity: 0, 
-        visibility: "hidden",
+        opacity: 0.2,  // Changed from 0 to 0.2 - start partially visible to prevent black screen
+        visibility: "visible",
         display: "block"
       });
     }
@@ -315,38 +373,48 @@ function setDesktopAnimationForWorkSection(workImages: string[], isMobile: boole
   
   /* project containers - initial reveal animation */
   if (workImageElements[0] && workTextBlocks[0] && projectContainers[0]) {
-    // Ensure first container is visible
+    // CRITICAL FIX: Set first card to FULLY VISIBLE state immediately
+    // This prevents disappearing on refresh - elements are always visible regardless of scroll position
     gsap.set(projectContainers[0], { 
       visibility: "visible", 
       opacity: 1,
       display: "flex"
     });
     
-    // Set initial state for reveal animation (start slightly scaled and translated)
+    // Set first card children to final visible state IMMEDIATELY
+    // This ensures they're visible on page load/refresh, no matter the scroll position
     gsap.set([workImageElements[0], workTextBlocks[0]], {
-      yPercent: 30,
-      scale: 1.1,
-      opacity: 0.9
+      yPercent: 0,
+      scale: 1,
+      opacity: 1,
+      visibility: "visible"
     });
     
-    // Animate first card into view
-    gsap.to([workImageElements[0], workTextBlocks[0]], {
-      scale: 1, 
-      opacity: 1,
-      yPercent: 0,
-      ease: 'power2.out',
-      duration: 0.8,
-      scrollTrigger: {
-        scrub: 1, 
-        trigger: '.work',
-        start: 'top bottom-=50',
-        end: 'top center',
-      },
-    });
+    // Note: Removed initial reveal animation to prevent elements disappearing on refresh
+    // First card is now always visible from the start
   }
 
   // Calculate total scroll distance needed
   const totalScrollDistance = scrollDistance * totalWorkElements;
+
+  // Pre-setup next cards: Initialize children with small opacity so they're visible from start
+  for (let i = 1; i < totalWorkElements; i++) {
+    if (workImageElements[i]) {
+      gsap.set(workImageElements[i], {
+        opacity: 0.2,  // Start with small opacity so it's visible
+        visibility: "visible",
+        scale: 1.05
+      });
+    }
+    if (workTextBlocks[i]) {
+      gsap.set(workTextBlocks[i], {
+        opacity: 0.2,  // Start with small opacity so it's visible
+        visibility: "visible",
+        yPercent: 100,
+        display: "flex"
+      });
+    }
+  }
 
   // Create scroll triggers for each card transition
   [...Array(totalWorkElements - 1)].forEach((_, i) => {
@@ -372,6 +440,28 @@ function setDesktopAnimationForWorkSection(workImages: string[], isMobile: boole
           delay: 0.1,
           inertia: false
         },
+        onEnter: () => {
+          // Set next container visible as soon as we enter scroll trigger (before animation starts)
+          if (i + 1 < totalWorkElements && projectContainers[i + 1]) {
+            gsap.set(projectContainers[i + 1], { 
+              visibility: "visible",
+              display: "flex",
+              opacity: 1,
+              zIndex: totalWorkElements + 5
+            });
+          }
+        },
+        onEnterBack: () => {
+          // Also handle when scrolling back
+          if (i + 1 < totalWorkElements && projectContainers[i + 1]) {
+            gsap.set(projectContainers[i + 1], { 
+              visibility: "visible",
+              display: "flex",
+              opacity: 1,
+              zIndex: totalWorkElements + 5
+            });
+          }
+        },
       },
     });
 
@@ -383,7 +473,7 @@ function setDesktopAnimationForWorkSection(workImages: string[], isMobile: boole
         visibility: "hidden",
         scale: 0.95,
         duration: 0.8,
-      }, 0);
+      }, 0.1); // Slight delay to ensure next card starts appearing first
     }
 
     if (workTextBlocks[i]) {
@@ -393,24 +483,53 @@ function setDesktopAnimationForWorkSection(workImages: string[], isMobile: boole
         opacity: 0,
         visibility: "hidden",
         duration: 0.8,
-      }, 0);
+      }, 0.1); // Slight delay to ensure next card starts appearing first
+    }
+
+    // Hide current container after children fade out to prevent blank space
+    if (projectContainers[i]) {
+      tl.to(projectContainers[i], {
+        opacity: 0,
+        visibility: "hidden",
+        duration: 0.1,
+      }, 0.9); // Hide container after fade completes
     }
 
     // Animate next card in
     if (i + 1 < totalWorkElements) {
-      // Show container before animating
-      if (projectContainers[i + 1]) {
-        gsap.set(projectContainers[i + 1], { 
+      // Ensure next card children are visible FIRST (at negative time)
+      if (workImageElements[i + 1]) {
+        tl.set(workImageElements[i + 1], {
+          opacity: 0.2,
           visibility: "visible",
-          display: "flex",
-          opacity: 0
-        });
+          scale: 1.05
+        }, -0.2); // Even earlier to ensure children are ready
       }
       
+      if (workTextBlocks[i + 1]) {
+        tl.set(workTextBlocks[i + 1], {
+          opacity: 0.2,
+          visibility: "visible",
+          yPercent: 100,
+          display: "flex"
+        }, -0.2); // Even earlier to ensure children are ready
+      }
+
+      // THEN set container visible - children are already visible so no blank space
+      if (projectContainers[i + 1]) {
+        tl.set(projectContainers[i + 1], { 
+          visibility: "visible",
+          display: "flex",
+          opacity: 1,
+          zIndex: totalWorkElements + 5
+        }, -0.1); // Negative time ensures this happens BEFORE current card fades
+      }
+      
+      // Now animate children from 0.2 to 1
       if (workImageElements[i + 1]) {
         tl.fromTo(workImageElements[i + 1], {
-          opacity: 0,
-          visibility: "hidden",
+          opacity: 0.2,  // Start from pre-setup opacity (0.2) - already visible
+          visibility: "visible",
           scale: 1.05
         }, {
           ease: "power2.out",
@@ -426,8 +545,8 @@ function setDesktopAnimationForWorkSection(workImages: string[], isMobile: boole
           workTextBlocks[i + 1],
           {
             yPercent: 100,
-            opacity: 0,
-            visibility: "hidden",
+            opacity: 0.2,  // Start from pre-setup opacity (0.2) - already visible
+            visibility: "visible",
             display: "flex"
           },
           {

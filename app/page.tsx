@@ -52,7 +52,7 @@ export default function Home() {
     <>
       <Container
         className="main-container"
-        custom={{ width: "92%", marginLeft: "8%" }}
+        custom={{ width: "92%", marginLeft: "0%" }}
         customMobile={{ width: "100%", marginLeft: "0" }}
       >
         <SWHeader toggleMenu={() => setMenuToggle((t) => !t)} />
